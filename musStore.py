@@ -59,8 +59,9 @@ class folders(tkinter.Frame):
 	def delete(self):
 		if (len(self.tv.selected()) > 0):
 			de=self.tv.item(self.tv.selected()[0])["values"]
-			#lbl.config(text= de)
-			cur.execute("delete from folder where sortkey = ? and title=?", (de[0], de[1]))
+			te=self.tv.item(self.tv.selected()[0])["text"]
+			
+			cur.execute("delete from folder where sortkey = ? and title=?", (te, de[0]))
 			
 			self.tv.delete(self.tv.selected())
 			con.commit()
@@ -120,8 +121,10 @@ class songs(tkinter.Frame):
 	def delete(self):
 		if (len(self.tv.selected()) > 0):
 			de=self.tv.item(self.tv.selected()[0])["values"]
+			te=self.tv.item(self.tv.selected()[0])["text"]
+			#print(de, te)
 			#lbl.config(text= de)
-			cur.execute("delete from music where sortkey = ? and title=?", (de[0], de[1]))
+			cur.execute("delete from music where sortkey = ? and title=?", (te, de[0]))
 			
 			self.tv.delete(self.tv.selected())
 			con.commit()
