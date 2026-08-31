@@ -35,35 +35,7 @@ def buildName(a,b):
 #cur.execute("create table tune (id integer not null primary key autoincrement, sortkey text, title text)")
 #cur.execute("insert into tune (sortkey, title) values ('SLANE', 'SLANE')")
 
-class tkInputBox():
-	def passFunc(self, loc, func):
-		self.funcs[loc].append(func)
-		
-	def add(self):
-		snd={}
-		print("Do stuff here") 
-		for i,j in self.vars.items():
-			snd[i] = j.get()
-		a = self.vars["title"].get()
-		b = self.vars["subtitle"].get()
-		c = buildName(a,b)
-		cur.execute("insert into music (sortkey, title,subtitle) values (?, ?,?)", (c,a,b))
-		for i in self.funcs["add"]:
-			i()
-		pg.insert("", tkinter.END, text=c, values= [c, a, b])
-		self.win.destroy()
-		
-	def __init__(self, a):
-		self.funcs = {"add": []}
-		self.vars = {}
-		self.win = tkinter.Tk()
-		h = 0
-		for i,j in a.items():
-			self.vars[i] = tkinter.Entry(self.win)
-			tkinter.Label(self.win, text=j["name"]).grid(column=0,row=h, sticky="e")
-			self.vars[i].grid(column=1,row=h,pady=5,padx=5, sticky="w")
-			h+= 1
-		tkinter.Button(self.win, text="Add", command=self.add).grid(column=1,row=h)
+from widgets.tkInputBox import tkInputBox
 
 win = tkinter.Tk()
 	
@@ -76,6 +48,7 @@ def add():
 			"name":"Subtitle"
 		}
 	})
+	d.passFunc("add", f1.addSong)
 
 s = ttk.Style()
 s.configure('Treeview', rowheight=48+8)
@@ -98,7 +71,6 @@ class treeViewWithSearch(tkinter.Frame):
 					while (k[0] != ""):
 						l = k[0]
 						k = self.storage[k[0]]
-						#showerror("", l)
 						if (l not in disp):
 							disp.append(l)
 						else:
@@ -108,9 +80,10 @@ class treeViewWithSearch(tkinter.Frame):
 				self.tv.insert(j[0], "end", i, values= j[1])
 				if (i in self.opens):
 					self.tv.item(i, open=True)
-
-		#showerror("complete", "done")
-					
+	
+	def delete(self, id):
+		pass
+		
 	def add(self, data, parent = ""):
 		self.storage[data[0]] = [parent, data[1:]]
 		self.tv.insert(parent, "end", data[0], values= data[1:])
@@ -119,16 +92,11 @@ class treeViewWithSearch(tkinter.Frame):
 		tree = event.widget
 		item_id = tree.focus()
     
-    # Check the actual Tkinter event type to add or remove
 		if event.type == "35" or "Open" in str(event):  # <<TreeviewOpen>>
 			self.opens.add(item_id)
 		elif event.type == "36" or "Close" in str(event):  # <<TreeviewClose>>
 			self.opens.discard(item_id)
         
-    # Print the current set of open item names for debugging
-    #open_names = [tree.item(i, "text") for i in currently_open_items]
-    #print(f"Currently open items: {open_names}")
-
 	def __init__(self, master, storeSize = 2, **kw):
 		self.storage = {}
 		self.opens = set()
@@ -173,6 +141,14 @@ class folders(tkinter.Frame):
 		self.sadd.grid(row = 2,column=1)
 		
 class songs(tkinter.Frame):
+	
+	def addSong(self, data):
+		a = data["title"]
+		b = data["subtitle"]
+		c = buildName(a,b)
+		cur.execute("insert into music (sortkey, title,subtitle) values (?, ?,?)", (c,a,b))
+		self.tv.insert("", tkinter.END, text=c, values= [c, a, b])
+
 	def tvSongSearch(self, a,b,c):
 		n = self.tt.get()
 		self.tv.delete(*self.tv.get_children())
