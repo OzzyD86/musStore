@@ -17,6 +17,7 @@ def report_callback_exception(self, exc, val, tb):
 	#f = open("whoops", "r")
 	#f.write("Oop")
 	#f.close()
+	
 tkinter.Tk.report_callback_exception = report_callback_exception
 
 def buildName(a,b):
@@ -36,7 +37,7 @@ def buildName(a,b):
 #cur.execute("insert into tune (sortkey, title) values ('SLANE', 'SLANE')")
 
 from widgets.tkInputBox import tkInputBox
-
+from widgets.treeViewWithSearch import treeViewWithSearch
 win = tkinter.Tk()
 	
 def add():
@@ -51,76 +52,7 @@ def add():
 	d.passFunc("add", f1.addSong)
 
 s = ttk.Style()
-s.configure('Treeview', rowheight=48+8)
-
-class treeViewWithSearch(tkinter.Frame):
-	def search(self, a,b,c):
-		n = self.tt.get()
-		disp = []
-		self.tv.delete(*self.tv.get_children())
-		for i,j in self.storage.items():
-			t=0
-			for k in j[1]:
-				if (k.upper().find(n.upper()) >= 0):
-					t+= 1
-			if (t >0):
-				if (j not in disp):
-					disp.append(i)
-					k = j.copy()
-					
-					while (k[0] != ""):
-						l = k[0]
-						k = self.storage[k[0]]
-						if (l not in disp):
-							disp.append(l)
-						else:
-							break
-		for i,j in self.storage.items():
-			if (i in disp):
-				self.tv.insert(j[0], "end", i, values= j[1])
-				if (i in self.opens):
-					self.tv.item(i, open=True)
-	
-	def delete(self, id):
-		pass
-		
-	def add(self, data, parent = ""):
-		self.storage[data[0]] = [parent, data[1:]]
-		self.tv.insert(parent, "end", data[0], values= data[1:])
-
-	def update_open_items(self, event):
-		tree = event.widget
-		item_id = tree.focus()
-    
-		if event.type == "35" or "Open" in str(event):  # <<TreeviewOpen>>
-			self.opens.add(item_id)
-		elif event.type == "36" or "Close" in str(event):  # <<TreeviewClose>>
-			self.opens.discard(item_id)
-        
-	def __init__(self, master, storeSize = 2, **kw):
-		self.storage = {}
-		self.opens = set()
-		super().__init__(master, **kw)
-		self.tt = tkinter.StringVar()
-
-		self.search_label = tkinter.Label(self, text="search")
-		self.search_label.grid(padx=5, pady=5)
-		self.search_box = tkinter.Entry(self, textvariable=self.tt)
-		self.tt.trace('w', self.search)
-		self.columnconfigure(1, weight=1)
-		self.rowconfigure(1, weight=1)
-	
-		self.search_box.grid(column=1, columnspan=2, row=0,sticky="ew")
-		
-		self.tv = ttk.Treeview(self,columns=list(range(1,storeSize+1)),show="headings")
-		self.tv.bind("<<TreeviewOpen>>", self.update_open_items)
-		self.tv.bind("<<TreeviewClose>>", self.update_open_items)
-
-		self.tv.grid(columnspan=2, row=1, sticky="news")
-		self.sb = tkinter.Scrollbar(self)
-		self.sb.grid(column=2,row=1,sticky="ns")
-		self.sb.config(command=self.tv.yview)
-		self.tv.config(yscrollcommand=self.sb.set)
+#s.configure('Treeview', rowheight=48+8)
 
 class folders(tkinter.Frame):
 	def add(self):
@@ -147,7 +79,8 @@ class songs(tkinter.Frame):
 		b = data["subtitle"]
 		c = buildName(a,b)
 		cur.execute("insert into music (sortkey, title,subtitle) values (?, ?,?)", (c,a,b))
-		self.tv.insert("", tkinter.END, text=c, values= [c, a, b])
+		d = cur.lastrowid
+		self.tv.add([d, c, a, b])
 
 	def tvSongSearch(self, a,b,c):
 		n = self.tt.get()
@@ -156,25 +89,28 @@ class songs(tkinter.Frame):
 			self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
 
 	def delete(self):
-		de=self.tv.item(self.tv.selection()[0])["values"]
-		lbl.config(text= de)
+		de=self.tv.item(self.tv.selected()[0])["values"]
+		#lbl.config(text= de)
 		cur.execute("delete from music where sortkey = ? and title=?", (de[0], de[1]))
 		
-		self.tv.delete(pg.selection())
+		self.tv.delete(self.tv.selected())
 		con.commit()
 		
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		self.tt = tkinter.StringVar()
-		self.search_label = tkinter.Label(self, text="search")
-		self.search_label.grid(padx=5, pady=5)
-		self.search_box = tkinter.Entry(self, textvariable=self.tt)
-		self.tt.trace('w', self.tvSongSearch)
-		self.search_box.grid(column=1, columnspan=1, row=0,sticky="ew")
-		self.tv = ttk.Treeview(self,columns=[1,2,3],show="headings")
+		self.tv = treeViewWithSearch(self, 3)
+		self.tv.grid(columnspan=3)
+		#self.search_label = tkinter.Label(self, text="search")
+		#self.search_label.grid(padx=5, pady=5)
+		#self.search_box = tkinter.Entry(self, textvariable=self.tt)
+		#self.tt.trace_add('write', self.tvSongSearch)
+		#self.search_box.grid(column=1, columnspan=1, row=0,sticky="ew")
+		s#elf.tv = ttk.Treeview(self,columns=[1,2,3],show="headings")
 		for i in cur.execute("select * from music order by sortkey asc"):
-			self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
-		self.tv.grid(columnspan=2, row=1, sticky="news")
+			self.tv.add(i)
+			#self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
+		#self.tv.grid(columnspan=2, row=1, sticky="news")
 		self.rowconfigure(1, weight=1)
 		self.columnconfigure(0, weight=1)
 		
@@ -189,25 +125,20 @@ notebook = ttk.Notebook(win, style='lefttab.TNotebook')
 f1 = songs(notebook, bg='red')
 fo = folders(notebook, bg='green')
 f2 = tkinter.Frame(notebook, bg='blue', width=200, height=200)
-pg = f1.tv
 
-mu = ttk.Treeview(f2,columns=[1,2,3],show="headings")
-for i in cur.execute("select * from tune order by sortkey asc"):
-	mu.insert("", "end", i[0], values= [i[1],i[2]])
-mu.grid(columnspan=2, sticky="news")
+#mu = ttk.Treeview(f2,columns=[1,2,3],show="headings")
+#for i in cur.execute("select * from tune order by sortkey asc"):
+#	mu.insert("", "end", i[0], values= [i[1],i[2]])
+#mu.grid(columnspan=2, sticky="news")
 
 notebook.add(f1, text='Songs')
 
 #notebook.add(f2, text='Tunes')
 notebook.add(fo, text='Folders')
 notebook.grid(sticky="news")
-lbl = tkinter.Label(f1, text="")
+#lbl = tkinter.Label(f1, text="")
 #lbl.grid(row=3,columnspan=3)
-sb = tkinter.Scrollbar(f1)
-sb.grid(column=3,row=1,sticky="ns")
-sb.config(command=pg.yview)
-pg.config(yscrollcommand=sb.set)
-	
+
 win.rowconfigure(0, weight=1)
 win.columnconfigure(0, weight=1)
 win.mainloop()
