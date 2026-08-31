@@ -33,6 +33,19 @@ class treeViewWithSearch(tkinter.Frame):
 		return self.tv.selection()
 		
 	def delete(self, id):
+#		print(id)
+		print(list(self.storage.keys()))
+#		return
+		if (type(id) in [list, tuple]):
+			for i in id:
+				if (i in self.storage):
+					del self.storage[i]
+				elif(int(i) in self.storage):
+					del self.storage[int(i)]
+				else:
+					del self.storage[str(i)] # Is this not good enough for you?!
+		else:
+			del self.storage[int(id)]
 		self.tv.delete(id)
 		# We need to solve recursive deletes here?
 		pass
@@ -42,7 +55,7 @@ class treeViewWithSearch(tkinter.Frame):
 		
 	def add(self, data, parent = ""):
 		self.storage[data[0]] = [parent, data[1:]]
-		self.tv.insert(parent, "end", data[0], values= data[1:])
+		self.tv.insert(parent, "end", data[0], text=data[1], values= data[2:])
 
 	def update_open_items(self, event):
 		tree = event.widget
@@ -68,7 +81,7 @@ class treeViewWithSearch(tkinter.Frame):
 	
 		self.search_box.grid(column=1, columnspan=2, row=0,sticky="ew")
 		
-		self.tv = ttk.Treeview(self,columns=list(range(1,storeSize+1)),show="headings")
+		self.tv = ttk.Treeview(self,columns=list(range(1,storeSize+1)),show="tree headings")
 		self.tv.bind("<<TreeviewOpen>>", self.update_open_items)
 		self.tv.bind("<<TreeviewClose>>", self.update_open_items)
 

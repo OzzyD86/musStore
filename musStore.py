@@ -55,22 +55,51 @@ s = ttk.Style()
 #s.configure('Treeview', rowheight=48+8)
 
 class folders(tkinter.Frame):
-	def add(self):
+
+	def delete(self):
+		if (len(self.tv.selected()) > 0):
+			de=self.tv.item(self.tv.selected()[0])["values"]
+			#lbl.config(text= de)
+			cur.execute("delete from folder where sortkey = ? and title=?", (de[0], de[1]))
+			
+			self.tv.delete(self.tv.selected())
+			con.commit()
+		else:
+			showerror("Nothing to delete", "No items or no item selected to delete")
+			
+	def addFolder(self, data):
+		a = data["title"]
+		c = buildName(a,a)
+		cur.execute("insert into folder (sortkey, title) values (?, ?)", (c,a))
+		d = cur.lastrowid
+		self.tv.add(["-:" + str(d), c, a])
+
+	def addFolderDialog(self):
+		d = tkInputBox({
+			"title" : {
+				"name":"Folder Name"
+			},
+		})
+		d.passFunc("add", self.addFolder)
 		pass
 	
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		
-		p = treeViewWithSearch(self, 3)
-		p.grid(columnspan=3,rowspan=2,sticky="news")
-		p.add(["Nf", "Not in Folder"])
+		self.tv = treeViewWithSearch(self, 3)
+		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
+		for i in cur.execute("select * from folder order by sortkey asc"):
+			#print(("f-" + str(i[:1][0]),) + i[1:])
+			#print(i)
+			self.tv.add(("f-" + str(i[:1][0]),) + i[1:])
+		self.tv.add(["Nf", "Not in Folder"])
 		for i in cur.execute("select * from music order by sortkey asc"):
-			p.add(i, "Nf")
+			self.tv.add(i, "Nf")
 
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
-		self.sadd = tkinter.Button(self, text="Add...", command=self.add)
-		self.sadd.grid(row = 2,column=1)
+		self.sadd = tkinter.Button(self, text="Add...", command=self.addFolderDialog).grid(row = 2,column=1)
+		self.sdel = tkinter.Button(self, text="Delete", command=self.delete).grid(row = 2,column=0)
 		
 class songs(tkinter.Frame):
 	
@@ -89,13 +118,16 @@ class songs(tkinter.Frame):
 			self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
 
 	def delete(self):
-		de=self.tv.item(self.tv.selected()[0])["values"]
-		#lbl.config(text= de)
-		cur.execute("delete from music where sortkey = ? and title=?", (de[0], de[1]))
-		
-		self.tv.delete(self.tv.selected())
-		con.commit()
-		
+		if (len(self.tv.selected()) > 0):
+			de=self.tv.item(self.tv.selected()[0])["values"]
+			#lbl.config(text= de)
+			cur.execute("delete from music where sortkey = ? and title=?", (de[0], de[1]))
+			
+			self.tv.delete(self.tv.selected())
+			con.commit()
+		else:
+			showerror("Nothing to delete", "No items or no item selected to delete")
+			
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		self.tt = tkinter.StringVar()
