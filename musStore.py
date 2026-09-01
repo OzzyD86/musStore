@@ -21,7 +21,7 @@ def report_callback_exception(self, exc, val, tb):
 	#f.write("Oop")
 	#f.close()
 	
-#tkinter.Tk.report_callback_exception = report_callback_exception
+tkinter.Tk.report_callback_exception = report_callback_exception
 
 def buildName(a,b):
 	for i in [" ", ",","!", "'"]:
@@ -56,7 +56,10 @@ def add():
 	d.passFunc("add", f1.addSong)
 
 s = ttk.Style()
-#s.configure('Treeview', rowheight=48+8)
+import sys
+
+if hasattr(sys, 'getandroidapilevel'):
+	s.configure('Treeview', rowheight=48+8)
 
 class folders(tkinter.Frame):
 
@@ -228,7 +231,7 @@ class songs(tkinter.Frame):
 		for i in cur.execute("select * from music order by sortkey asc"):
 			self.tv.add(i)
 
-		self.rowconfigure(1, weight=1)
+		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
 		
 		self.sadd = tkinter.Button(self, text="Add...", command=add)
