@@ -18,7 +18,7 @@ def report_callback_exception(self, exc, val, tb):
 	#f.write("Oop")
 	#f.close()
 	
-tkinter.Tk.report_callback_exception = report_callback_exception
+#tkinter.Tk.report_callback_exception = report_callback_exception
 
 def buildName(a,b):
 	for i in [" ", ",","!", "'"]:
@@ -40,7 +40,7 @@ def buildName(a,b):
 from widgets.tkInputBox import tkInputBox
 from widgets.treeViewWithSearch import treeViewWithSearch
 win = tkinter.Tk()
-	
+win.title("Music Store")
 def add():
 	d = tkInputBox(win, {
 		"title" : {
@@ -53,15 +53,25 @@ def add():
 	d.passFunc("add", f1.addSong)
 
 s = ttk.Style()
-s.configure('Treeview', rowheight=48+8)
+#s.configure('Treeview', rowheight=48+8)
 
 class folders(tkinter.Frame):
 
 	def delete(self):
 		if (len(self.tv.selected()) > 0):
+			if (self.tv.selected()[0] == "Nf"):
+				showerror("Deleting built-in folder", "This folder is a built-in folder and cannot be deleted.")
+				return False
+				
 			de=self.tv.item(self.tv.selected()[0])["values"]
 			te=self.tv.item(self.tv.selected()[0])["text"]
-			
+			print(te, de)
+			d = cur.execute("select count(*) as c from music_folder a join folder b on a.folder_id = b.id where b.sortkey = ? and b.title = ?", (te, de[0]))
+			ct = d.fetchone()[0]
+			if (ct > 0):
+				showerror("Folder is not empty", "This folder is not empty and cannot be deleted.")
+				return False
+				
 			cur.execute("delete from folder where sortkey = ? and title=?", (te, de[0]))
 			
 			self.tv.delete(self.tv.selected())
@@ -74,18 +84,15 @@ class folders(tkinter.Frame):
 		c = buildName(a,a)
 		cur.execute("insert into folder (sortkey, title) values (?, ?)", (c,a))
 		d = cur.lastrowid
-		self.tv.add(["-:" + str(d), c, a])
+		self.tv.add(["f-" + str(d), c, a])
 		
 	def updateSongToFolder(self, a):
-		#showerror("", a)
-		
+	
 		c = self.tv.selected()[0].split("-")[1]
-		#showerror("", c)
-		#return False
+
 		for b in a["folder"]:
-			#showerror("", b)
 			cur.execute("replace into music_folder (music_id, folder_id) values (?,?)", (c,b))
-			self.tv.tv.move(self.tv.selected()[0], "f-"+str(b),0)
+			self.tv.move(self.tv.selected()[0], "f-"+str(b),0)
 		pass
 		
 	def updateSongDialog(self):

@@ -33,7 +33,11 @@ class treeViewWithSearch(tkinter.Frame):
 	
 	def selected(self):
 		return self.tv.selection()
-		
+	
+	def move(self, what, where, loc = 0):
+		self.tv.move(what, where , loc)
+		self.storage[what][0] = where 
+
 	def delete(self, id):
 #		print(id)
 		print(list(self.storage.keys()))
