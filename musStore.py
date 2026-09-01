@@ -3,11 +3,14 @@ from tkinter import ttk
 import sqlite3
 from tkinter.messagebox import showerror
 
+from core.bindings import bindings
+
 class musStore():
 	def __init__(self):
-		self.con = sqlite3.connect("musScore.db")
+		self.con = sqlite3.connect("musScore.db") # Should change this at some point!
 		self.cur = self.con.cursor()
-
+		self.bindings = bindings()
+		
 ms = musStore()
 con = ms.con
 cur = ms.cur
@@ -63,9 +66,16 @@ class folders(tkinter.Frame):
 				showerror("Deleting built-in folder", "This folder is a built-in folder and cannot be deleted.")
 				return False
 				
+			sel = self.tv.selected()[0]
 			de=self.tv.item(self.tv.selected()[0])["values"]
 			te=self.tv.item(self.tv.selected()[0])["text"]
-			print(te, de)
+			
+			#print(sel, te, de)
+			
+			if (sel.split("-")[0] != "f"):
+				showerror("This is not a folder", "Only folders can be deleted here. Their contents cannot.")
+				return False				
+			
 			d = cur.execute("select count(*) as c from music_folder a join folder b on a.folder_id = b.id where b.sortkey = ? and b.title = ?", (te, de[0]))
 			ct = d.fetchone()[0]
 			if (ct > 0):
@@ -121,6 +131,17 @@ class folders(tkinter.Frame):
 			},
 		})
 		d.passFunc("add", self.updateSongToFolder)
+	
+	def songsAddedNewSong(self, data):
+		print("== NEW SONG ADDED == ")
+		self.tv.add(["s-" + str(data['dbid']), data['sortkey'], data['title'], data['subtitle']], "Nf")
+		print(data)
+
+	def songsDeletedSong(self, data):
+		print("== SONG REMOVED == ")
+		self.tv.delete("s-" + str(data['dbid']))
+		cur.execute("delete from music_folder where music_id = ?", (data['dbid'],))
+		print(data)
 		
 	def addFolderDialog(self):
 		d = tkInputBox(win, {
@@ -133,7 +154,9 @@ class folders(tkinter.Frame):
 	
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
-		
+		self.core = self.nametowidget(".").core # Aha! That's how to do it!
+		self.core.bindings.bind("music", "<create>", self.songsAddedNewSong)
+		self.core.bindings.bind("music", "<delete>", self.songsDeletedSong)
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
 		for i in cur.execute("select * from folder order by sortkey asc"):
@@ -163,6 +186,10 @@ class songs(tkinter.Frame):
 		c = buildName(a,b)
 		cur.execute("insert into music (sortkey, title,subtitle) values (?, ?,?)", (c,a,b))
 		d = cur.lastrowid
+		if (self.core.bindings.getBindings("music", "<create>")):
+			for i in self.core.bindings.getBindings("music", "<create>"):
+				i({ "title" : a, "subtitle": b, "sortkey": c, "dbid": d})
+
 		self.tv.add([d, c, a, b])
 
 	def tvSongSearch(self, a,b,c):
@@ -179,6 +206,12 @@ class songs(tkinter.Frame):
 			#lbl.config(text= de)
 			cur.execute("delete from music where sortkey = ? and title=?", (te, de[0]))
 			
+			s = self.tv.selected()
+
+			if (self.core.bindings.getBindings("music", "<delete>")):
+				for i in self.core.bindings.getBindings("music", "<delete>"):
+					i({ "sortkey" : de[0], "title": te, "dbid": s[0]})
+
 			self.tv.delete(self.tv.selected())
 			con.commit()
 		else:
@@ -186,19 +219,15 @@ class songs(tkinter.Frame):
 			
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
+		self.core = self.nametowidget(".").core # Aha! That's how to do it!
+
 		self.tt = tkinter.StringVar()
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,sticky='news')
-		#self.search_label = tkinter.Label(self, text="search")
-		#self.search_label.grid(padx=5, pady=5)
-		#self.search_box = tkinter.Entry(self, textvariable=self.tt)
-		#self.tt.trace_add('write', self.tvSongSearch)
-		#self.search_box.grid(column=1, columnspan=1, row=0,sticky="ew")
-		s#elf.tv = ttk.Treeview(self,columns=[1,2,3],show="headings")
+
 		for i in cur.execute("select * from music order by sortkey asc"):
 			self.tv.add(i)
-			#self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
-		#self.tv.grid(columnspan=2, row=1, sticky="news")
+
 		self.rowconfigure(1, weight=1)
 		self.columnconfigure(0, weight=1)
 		

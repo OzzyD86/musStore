@@ -40,7 +40,7 @@ class treeViewWithSearch(tkinter.Frame):
 
 	def delete(self, id):
 #		print(id)
-		print(list(self.storage.keys()))
+		#print(list(self.storage.keys()))
 #		return
 		if (type(id) in [list, tuple]):
 			for i in id:
@@ -51,7 +51,7 @@ class treeViewWithSearch(tkinter.Frame):
 				else:
 					del self.storage[str(i)] # Is this not good enough for you?!
 		else:
-			del self.storage[int(id)]
+			del self.storage[id]
 		self.tv.delete(id)
 		# We need to solve recursive deletes here?
 		pass
