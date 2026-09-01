@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import ttk
+from tkinter.messagebox import showerror
 
 class treeViewWithSearch(tkinter.Frame):
 	def search(self, a,b,c):
@@ -25,7 +26,8 @@ class treeViewWithSearch(tkinter.Frame):
 							break
 		for i,j in self.storage.items():
 			if (i in disp):
-				self.tv.insert(j[0], "end", i, values= j[1])
+				self.tv.insert(j[0], "end", i, text=j[1][0], values= j[1][1:])
+				#self.tv.insert(j[0], "end", i, values= j[1])
 				if (i in self.opens):
 					self.tv.item(i, open=True)
 	
@@ -57,14 +59,21 @@ class treeViewWithSearch(tkinter.Frame):
 		self.storage[data[0]] = [parent, data[1:]]
 		self.tv.insert(parent, "end", data[0], text=data[1], values= data[2:])
 
+	def update_closed_items(self, event):
+		tree = event.widget
+		item_id = tree.focus()
+		self.opens.discard(item_id)
+		#showerror(event.type, self.opens)
+		
 	def update_open_items(self, event):
 		tree = event.widget
 		item_id = tree.focus()
     
 		if event.type == "35" or "Open" in str(event):  # <<TreeviewOpen>>
 			self.opens.add(item_id)
-		elif event.type == "36" or "Close" in str(event):  # <<TreeviewClose>>
-			self.opens.discard(item_id)
+		#elif event.type == "36" or "Close" in str(event):  # <<TreeviewClose>>
+		#	self.opens.discard(item_id)
+		#showerror(event.type, self.opens)
         
 	def __init__(self, master, storeSize = 2, **kw):
 		self.storage = {}
@@ -83,7 +92,7 @@ class treeViewWithSearch(tkinter.Frame):
 		
 		self.tv = ttk.Treeview(self,columns=list(range(1,storeSize+1)),show="tree headings")
 		self.tv.bind("<<TreeviewOpen>>", self.update_open_items)
-		self.tv.bind("<<TreeviewClose>>", self.update_open_items)
+		self.tv.bind("<<TreeviewClose>>", self.update_closed_items)
 
 		self.tv.grid(columnspan=2, row=1, sticky="news")
 		self.sb = tkinter.Scrollbar(self)
