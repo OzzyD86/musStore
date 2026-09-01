@@ -32,6 +32,7 @@ def buildName(a,b):
 
 #cur.execute("drop table music")
 #cur.execute("create table music (id integer not null primary key autoincrement, sortkey text, title text, subtitle text)")
+#cur.execute("create table music_folder (music_id integer unique, folder_id integer)")
 #cur.execute("create table folder (id integer not null primary key autoincrement, sortkey text, title text)")
 #cur.execute("create table tune (id integer not null primary key autoincrement, sortkey text, title text)")
 #cur.execute("insert into tune (sortkey, title) values ('SLANE', 'SLANE')")
@@ -41,7 +42,7 @@ from widgets.treeViewWithSearch import treeViewWithSearch
 win = tkinter.Tk()
 	
 def add():
-	d = tkInputBox({
+	d = tkInputBox(win, {
 		"title" : {
 			"name":"Title"
 		},
@@ -52,7 +53,7 @@ def add():
 	d.passFunc("add", f1.addSong)
 
 s = ttk.Style()
-#s.configure('Treeview', rowheight=48+8)
+s.configure('Treeview', rowheight=48+8)
 
 class folders(tkinter.Frame):
 
@@ -74,9 +75,48 @@ class folders(tkinter.Frame):
 		cur.execute("insert into folder (sortkey, title) values (?, ?)", (c,a))
 		d = cur.lastrowid
 		self.tv.add(["-:" + str(d), c, a])
-
+		
+	def updateSongToFolder(self, a):
+		#showerror("", a)
+		
+		c = self.tv.selected()[0].split("-")[1]
+		#showerror("", c)
+		#return False
+		for b in a["folder"]:
+			#showerror("", b)
+			cur.execute("replace into music_folder (music_id, folder_id) values (?,?)", (c,b))
+			self.tv.tv.move(self.tv.selected()[0], "f-"+str(b),0)
+		pass
+		
+	def updateSongDialog(self):
+		x = {}
+		if (len(self.tv.selected()) == 0):
+			return False
+		for i in cur.execute("select id, title from folder"):
+			x[i[0]] = i[1]
+			
+		p = self.tv.selected()[0].split("-")
+		if (p[0] != "s"):
+			return False
+		#showerror(p)
+		
+		d = tkInputBox(win, {
+			"title" : {
+				"name":"Song Name",
+				"type": "label",
+				"text": "Get Text"
+			},
+			"folder" : {
+				"name":"Folder Name",
+				"type": "treeview",
+				"items": x,
+				"selected": None
+			},
+		})
+		d.passFunc("add", self.updateSongToFolder)
+		
 	def addFolderDialog(self):
-		d = tkInputBox({
+		d = tkInputBox(win, {
 			"title" : {
 				"name":"Folder Name"
 			},
@@ -87,19 +127,25 @@ class folders(tkinter.Frame):
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		
-		self.tv = treeViewWithSearch(self, 3)
+		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
 		for i in cur.execute("select * from folder order by sortkey asc"):
 			#print(("f-" + str(i[:1][0]),) + i[1:])
 			#print(i)
 			self.tv.add(("f-" + str(i[:1][0]),) + i[1:])
 		self.tv.add(["Nf", "Not in Folder"])
-		for i in cur.execute("select * from music order by sortkey asc"):
-			self.tv.add(i, "Nf")
+		for i in cur.execute("select a.*, b.folder_id from music a left join music_folder b on a.id = b.music_id order by a.sortkey asc"):
+			if (i[-1] is None):
+				gp = "Nf"
+			else:
+				gp = "f-" + str(i[-1])
+			self.tv.add(("s-" + str(i[:1][0]),) + i[1:-1], gp)
 
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
-		self.sadd = tkinter.Button(self, text="Add...", command=self.addFolderDialog).grid(row = 2,column=1)
+		self.sadd = tkinter.Button(self, text="Add...", command=self.addFolderDialog).grid(row = 2,column=2)
+		self.supdate = tkinter.Button(self, text="Update...", command=self.updateSongDialog).grid(row = 2,column=1)
+		
 		self.sdel = tkinter.Button(self, text="Delete", command=self.delete).grid(row = 2,column=0)
 		
 class songs(tkinter.Frame):
@@ -134,8 +180,8 @@ class songs(tkinter.Frame):
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		self.tt = tkinter.StringVar()
-		self.tv = treeViewWithSearch(self, 3)
-		self.tv.grid(columnspan=3)
+		self.tv = treeViewWithSearch(self, 2)
+		self.tv.grid(columnspan=3,sticky='news')
 		#self.search_label = tkinter.Label(self, text="search")
 		#self.search_label.grid(padx=5, pady=5)
 		#self.search_box = tkinter.Entry(self, textvariable=self.tt)
@@ -155,6 +201,7 @@ class songs(tkinter.Frame):
 		self.srem.grid(row = 2, column=0)
 		pass
 
+setattr(win, "core", ms)
 notebook = ttk.Notebook(win, style='lefttab.TNotebook')
 
 f1 = songs(notebook, bg='red')
