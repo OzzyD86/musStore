@@ -186,6 +186,8 @@ class folders(tkinter.Frame):
 				gp = "f-" + str(i[-1])
 			self.tv.add(("s-" + str(i[:1][0]),) + i[1:-1], gp)
 
+		#print(self.tv.get_children())
+		#displayText.insert(tkinter.END, self.tv.get_children("f-2", True))
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
 		self.sadd = tkinter.Button(self, text="Add...", command=self.addFolderDialog).grid(row = 2,column=2)
