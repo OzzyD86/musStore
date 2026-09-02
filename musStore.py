@@ -27,8 +27,6 @@ def report_callback_exception(self, exc, val, tb):
 	#f.write("Oop")
 	#f.close()
 	
-tkinter.Tk.report_callback_exception = report_callback_exception
-
 def buildName(a,b):
 	for i in [" ", ",","!", "'"]:
 		a = a.replace(i, "")
@@ -49,9 +47,6 @@ def buildName(a,b):
 from widgets.tkInputBox import tkInputBox
 from widgets.treeViewWithSearch import treeViewWithSearch
 win = tkinter.Tk()
-err = tkinter.Tk()
-displayText = tkinter.Text(err, height=20, width=40)
-displayText.grid()
 
 win.title("Music Store")
 def add():
@@ -70,6 +65,10 @@ import sys
 
 if hasattr(sys, 'getandroidapilevel'):
 	s.configure('Treeview', rowheight=48+8)
+	err = tkinter.Tk()
+	displayText = tkinter.Text(err, height=20, width=40)
+	displayText.grid()
+	tkinter.Tk.report_callback_exception = report_callback_exception
 
 class folders(tkinter.Frame):
 
@@ -115,6 +114,8 @@ class folders(tkinter.Frame):
 
 		for b in a["folder"]:
 			cur.execute("replace into music_folder (music_id, folder_id) values (?,?)", (c,b))
+			if (not self.tv.exists("f-"+str(b))):
+				self.tv.forcedisp("f-"+str(b))
 			self.tv.move(self.tv.selected()[0], "f-"+str(b),0)
 		con.commit()
 		pass

@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import ttk
+from tkinter.messagebox import showerror
 
 class treeViewWithSearch(tkinter.Frame):
 	def search(self, a,b,c):
@@ -12,30 +13,60 @@ class treeViewWithSearch(tkinter.Frame):
 				if (k.upper().find(n.upper()) >= 0):
 					t+= 1
 			if (t >0):
+				add = []
 				if (j not in disp):
-					disp.append(i)
 					k = j.copy()
 					
 					while (k[0] != ""):
 						l = k[0]
 						k = self.storage[k[0]]
 						if (l not in disp):
-							disp.append(l)
+							if (l not in add and l not in disp):
+								disp.insert(0, l)
 						else:
 							break
-		for i,j in self.storage.items():
-			if (i in disp):
-				self.tv.insert(j[0], "end", i, text=j[1][0], values= j[1][1:])
-			#	self.tv.insert(j[0], "end", i, values= j[1])
-				if (i in self.opens):
-					self.tv.item(i, open=True)
-	
+					if (i not in add and i not in disp):
+						add.append(i)
+				disp += add
+							
+		#print(disp)
+		while (len(disp) > 0):
+			for i,j in self.storage.items():
+				if (i in disp):
+					if (not self.tv.exists(j[0]) and not j[0] == ""):
+						a = self.forcedisp(j[0])
+						print(a)
+						for k in a:
+							disp.remove(k)
+					disp.remove(i)
+					self.tv.insert(j[0], "end", i, text=j[1][0], values= j[1][1:])
+					#self.tv.insert(j[0], "end", i, values= j[1])
+					if (i in self.opens):
+						self.tv.item(i, open=True)
+
+	def forcedisp(self, obj):
+		item = self.storage[obj]
+		subobj = []
+		if (not self.tv.exists(item[0]) and not item[0] == ""):
+			subobj = self.forcedisp(item[0])
+#		print(item)
+#		exit()
+		self.tv.insert(item[0], "end", obj, text=item[1][0], values = item[1][1:])
+		return [obj] + subobj
+		
+	def exists(self, item):
+		return self.tv.exists(item)
+		
 	def selected(self):
 		return self.tv.selection()
-		
+	
+	def move(self, what, where, loc = 0):
+		self.tv.move(what, where , loc)
+		self.storage[what][0] = where 
+
 	def delete(self, id):
 #		print(id)
-		print(list(self.storage.keys()))
+		#print(list(self.storage.keys()))
 #		return
 		if (type(id) in [list, tuple]):
 			for i in id:
@@ -46,15 +77,11 @@ class treeViewWithSearch(tkinter.Frame):
 				else:
 					del self.storage[str(i)] # Is this not good enough for you?!
 		else:
-			del self.storage[int(id)]
+			del self.storage[id]
 		self.tv.delete(id)
 		# We need to solve recursive deletes here?
 		pass
-		
-	def move(self, what, where, loc = 0):
-		self.tv.move(what, where , loc)
-		self.storage[what][0] = where 
-
+	
 	def item(self, item):
 		return self.tv.item(item)
 		
@@ -62,17 +89,21 @@ class treeViewWithSearch(tkinter.Frame):
 		self.storage[data[0]] = [parent, data[1:]]
 		self.tv.insert(parent, "end", data[0], text=data[1], values= data[2:])
 
-	def update_close_items(self, event):
+	def update_closed_items(self, event):
 		tree = event.widget
 		item_id = tree.focus()
-    
 		self.opens.discard(item_id)
-
+		#showerror(event.type, self.opens)
+		
 	def update_open_items(self, event):
 		tree = event.widget
 		item_id = tree.focus()
     
-		self.opens.add(item_id)
+		if event.type == "35" or "Open" in str(event):  # <<TreeviewOpen>>
+			self.opens.add(item_id)
+		#elif event.type == "36" or "Close" in str(event):  # <<TreeviewClose>>
+		#	self.opens.discard(item_id)
+		#showerror(event.type, self.opens)
         
 	def __init__(self, master, storeSize = 2, **kw):
 		self.storage = {}
@@ -91,7 +122,7 @@ class treeViewWithSearch(tkinter.Frame):
 		
 		self.tv = ttk.Treeview(self,columns=list(range(1,storeSize+1)),show="tree headings")
 		self.tv.bind("<<TreeviewOpen>>", self.update_open_items)
-		self.tv.bind("<<TreeviewClose>>", self.update_close_items)
+		self.tv.bind("<<TreeviewClose>>", self.update_closed_items)
 
 		self.tv.grid(columnspan=2, row=1, sticky="news")
 		self.sb = tkinter.Scrollbar(self)
