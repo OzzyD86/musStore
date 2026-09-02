@@ -112,11 +112,18 @@ class folders(tkinter.Frame):
 	
 		c = self.tv.selected()[0].split("-")[1]
 
+		parent = self.tv.storage[self.tv.selected()[0]][0]
+	
+	
 		for b in a["folder"]:
 			cur.execute("replace into music_folder (music_id, folder_id) values (?,?)", (c,b))
 			if (not self.tv.exists("f-"+str(b))):
 				self.tv.forcedisp("f-"+str(b))
 			self.tv.move(self.tv.selected()[0], "f-"+str(b),0)
+
+		if (len(self.tv.get_children(parent)) == 0 and not self.tv.checkForSearch(parent)):
+			self.tv.tv.delete(parent) # Happy over this, but should it be done in checkForSearch?
+			
 		con.commit()
 		pass
 		
