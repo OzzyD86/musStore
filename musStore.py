@@ -65,7 +65,7 @@ import sys
 
 if hasattr(sys, 'getandroidapilevel'):
 	s.configure('Treeview', rowheight=48+8)
-	err = tkinter.Tk()
+	err = tkinter.Toplevel(win)
 	displayText = tkinter.Text(err, height=20, width=40)
 	displayText.grid()
 	tkinter.Tk.report_callback_exception = report_callback_exception
@@ -81,8 +81,6 @@ class folders(tkinter.Frame):
 			sel = self.tv.selected()[0]
 			de=self.tv.item(self.tv.selected()[0])["values"]
 			te=self.tv.item(self.tv.selected()[0])["text"]
-			
-			#print(sel, te, de)
 			
 			if (sel.split("-")[0] != "f"):
 				showerror("This is not a folder", "Only folders can be deleted here. Their contents cannot.")
@@ -111,12 +109,17 @@ class folders(tkinter.Frame):
 	def updateSongToFolder(self, a):
 	
 		c = self.tv.selected()[0].split("-")[1]
-
+		parent = self.tv.storage[self.tv.selected()[0]][0]
+	
 		for b in a["folder"]:
 			cur.execute("replace into music_folder (music_id, folder_id) values (?,?)", (c,b))
 			if (not self.tv.exists("f-"+str(b))):
 				self.tv.forcedisp("f-"+str(b))
 			self.tv.move(self.tv.selected()[0], "f-"+str(b),0)
+
+		if (len(self.tv.get_children(parent)) == 0 and not self.tv.checkForSearch(parent)):
+			self.tv.tv.delete(parent) # Happy over this, but should it be done in checkForSearch?
+			
 		con.commit()
 		pass
 		
@@ -175,9 +178,8 @@ class folders(tkinter.Frame):
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
 		for i in cur.execute("select * from folder order by sortkey asc"):
-			#print(("f-" + str(i[:1][0]),) + i[1:])
-			#print(i)
 			self.tv.add(("f-" + str(i[:1][0]),) + i[1:])
+			
 		self.tv.add(["Nf", "Not in Folder"])
 		for i in cur.execute("select a.*, b.folder_id from music a left join music_folder b on a.id = b.music_id order by a.sortkey asc"):
 			if (i[-1] is None):
@@ -186,8 +188,6 @@ class folders(tkinter.Frame):
 				gp = "f-" + str(i[-1])
 			self.tv.add(("s-" + str(i[:1][0]),) + i[1:-1], gp)
 
-		#print(self.tv.get_children())
-		#displayText.insert(tkinter.END, self.tv.get_children("f-2", True))
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
 		self.sadd = tkinter.Button(self, text="Add...", command=self.addFolderDialog).grid(row = 2,column=2)
@@ -219,8 +219,7 @@ class songs(tkinter.Frame):
 		if (len(self.tv.selected()) > 0):
 			de=self.tv.item(self.tv.selected()[0])["values"]
 			te=self.tv.item(self.tv.selected()[0])["text"]
-			#print(de, te)
-			#lbl.config(text= de)
+		
 			cur.execute("delete from music where sortkey = ? and title=?", (te, de[0]))
 			
 			s = self.tv.selected()
@@ -254,6 +253,8 @@ class songs(tkinter.Frame):
 		self.srem.grid(row = 2, column=0)
 		pass
 
+from plugins.labeller import labeller
+
 setattr(win, "core", ms)
 notebook = ttk.Notebook(win, style='lefttab.TNotebook')
 
@@ -261,18 +262,13 @@ f1 = songs(notebook, bg='red')
 fo = folders(notebook, bg='green')
 f2 = tkinter.Frame(notebook, bg='blue', width=200, height=200)
 
-#mu = ttk.Treeview(f2,columns=[1,2,3],show="headings")
-#for i in cur.execute("select * from tune order by sortkey asc"):
-#	mu.insert("", "end", i[0], values= [i[1],i[2]])
-#mu.grid(columnspan=2, sticky="news")
-
 notebook.add(f1, text='Songs')
-
-#notebook.add(f2, text='Tunes')
 notebook.add(fo, text='Folders')
+
+lab = labeller(notebook, bg='blue')
+notebook.add(lab, text='Labeller')
+
 notebook.grid(sticky="news")
-#lbl = tkinter.Label(f1, text="")
-#lbl.grid(row=3,columnspan=3)
 
 win.rowconfigure(0, weight=1)
 win.columnconfigure(0, weight=1)
