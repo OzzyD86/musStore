@@ -8,7 +8,6 @@ class labeller(tkinter.Frame):
 		super().__init__(master, **kw)
 		self.core = self.nametowidget(".").core # Aha! That's how to do it!
 
-
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,sticky='news')
 
@@ -16,24 +15,17 @@ class labeller(tkinter.Frame):
 		
 		p = cur.execute("sELECT count(*) as `c` FROM `music`")
 		total = p.fetchone()[0]
-		print(total)
-		
-		#for i in cur.execute("SELECT count(*) as `c`, upper(substr(`sortkey`, 1, 1)) as `a` FROM `music` GROUP BY `a` order by `a` ASC"):
-			#print(i)
-			#self.tv.add([i[1], i[1], i[0]])
-		
+		#print(total)
+				
 		vols = 0
 		poses = []
 		for i in cur.execute("SELECT `id`, `sortkey`, `title` FROM `folder`"):
-			print(i)
 			vols += 1
 			poses.append("f-" + str(i[0]))
 			self.tv.add(["f-" + str(i[0]), i[2]])
-		#for i in cur.execute("select * from music order by sortkey asc"):
-	#		self.tv.add(i)
 
 		spl = total / vols
-		print(spl)
+		#print(spl)
 		st = {}
 		p = cur.execute("SELECT count(*) as `c`, upper(substr(`sortkey`, 1, 1)) as `a` FROM `music` GROUP BY `a` order by `a` ASC")
 		n = 0
@@ -45,15 +37,15 @@ class labeller(tkinter.Frame):
 			n += i[0]
 			ql[s] += i[0]
 			b = ((spl*(s+1))-ls, (spl*(s+1))-n)
-			print(b, i, s)
+			#print(b, i, s)
 			st[s].append(i)
 			ls = n
 			if (b[1] < 0):
-				print("Split point reached")
-				print(abs(b[0]), abs(b[1]))
+				#print("Split point reached")
+				#print(abs(b[0]), abs(b[1]))
 				if (abs(b[1]) <= abs(b[0])):
 					ql[s] -= i[0]
-					print("Move last set to next position")
+					#print("Move last set to next position")
 					ql[s+1] = i[0]
 				else:
 					ql[s+1] = 0
@@ -68,7 +60,7 @@ class labeller(tkinter.Frame):
 				ret[j[1]] = poses[i]
 		
 		for i in cur.execute("select * from music order by sortkey asc"):
-			print(i)
+			#print(i)
 			self.tv.add(i, ret[i[1][0]])
 
 		#for i in st:
