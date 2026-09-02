@@ -259,12 +259,15 @@ class songs(tkinter.Frame):
 		self.srem.grid(row = 2, column=0)
 		pass
 
+from plugins.labeller import labeller
+
 setattr(win, "core", ms)
 notebook = ttk.Notebook(win, style='lefttab.TNotebook')
 
 f1 = songs(notebook, bg='red')
 fo = folders(notebook, bg='green')
 f2 = tkinter.Frame(notebook, bg='blue', width=200, height=200)
+
 
 #mu = ttk.Treeview(f2,columns=[1,2,3],show="headings")
 #for i in cur.execute("select * from tune order by sortkey asc"):
@@ -275,6 +278,10 @@ notebook.add(f1, text='Songs')
 
 #notebook.add(f2, text='Tunes')
 notebook.add(fo, text='Folders')
+
+lab = labeller(notebook, bg='blue')
+notebook.add(lab, text='Labeller')
+
 notebook.grid(sticky="news")
 #lbl = tkinter.Label(f1, text="")
 #lbl.grid(row=3,columnspan=3)
