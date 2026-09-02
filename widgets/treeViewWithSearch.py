@@ -56,7 +56,16 @@ class treeViewWithSearch(tkinter.Frame):
 		
 	def exists(self, item):
 		return self.tv.exists(item)
-		
+	
+	def get_children(self, item = None, di = False):
+		if (di):
+			o=[]
+			for i in self.tv.get_children(item):
+				o.append(self.storage[i])
+			return o
+		else:
+			return self.tv.get_children(item)
+			
 	def selected(self):
 		return self.tv.selection()
 	
