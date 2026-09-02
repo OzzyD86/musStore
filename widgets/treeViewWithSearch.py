@@ -13,24 +13,47 @@ class treeViewWithSearch(tkinter.Frame):
 				if (k.upper().find(n.upper()) >= 0):
 					t+= 1
 			if (t >0):
+				add = []
 				if (j not in disp):
-					disp.append(i)
 					k = j.copy()
 					
 					while (k[0] != ""):
 						l = k[0]
 						k = self.storage[k[0]]
 						if (l not in disp):
-							disp.append(l)
+							if (l not in add and l not in disp):
+								disp.insert(0, l)
 						else:
 							break
-		for i,j in self.storage.items():
-			if (i in disp):
-				self.tv.insert(j[0], "end", i, text=j[1][0], values= j[1][1:])
-				#self.tv.insert(j[0], "end", i, values= j[1])
-				if (i in self.opens):
-					self.tv.item(i, open=True)
-	
+					if (i not in add and i not in disp):
+						add.append(i)
+				disp += add
+							
+		#print(disp)
+		while (len(disp) > 0):
+			for i,j in self.storage.items():
+				if (i in disp):
+					if (not self.tv.exists(j[0]) and not j[0] == ""):
+						a = self.forcedisp(j[0])
+						print(a)
+						for k in a:
+							disp.remove(k)
+					disp.remove(i)
+					self.tv.insert(j[0], "end", i, text=j[1][0], values= j[1][1:])
+					#self.tv.insert(j[0], "end", i, values= j[1])
+					if (i in self.opens):
+						self.tv.item(i, open=True)
+
+	def forcedisp(self, obj):
+		item = self.storage[obj]
+		subobj = []
+		if (not self.tv.exists(item[0]) and not item[0] == ""):
+			subobj = self.forcedisp(item[0])
+#		print(item)
+#		exit()
+		self.tv.insert(item[0], "end", obj, text=item[1][0], values = item[1][1:])
+		return [obj] + subobj
+		
 	def selected(self):
 		return self.tv.selection()
 	

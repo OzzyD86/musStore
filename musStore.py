@@ -21,7 +21,6 @@ def report_callback_exception(self, exc, val, tb):
 	#f.write("Oop")
 	#f.close()
 	
-tkinter.Tk.report_callback_exception = report_callback_exception
 
 def buildName(a,b):
 	for i in [" ", ",","!", "'"]:
@@ -60,6 +59,8 @@ import sys
 
 if hasattr(sys, 'getandroidapilevel'):
 	s.configure('Treeview', rowheight=48+8)
+	tkinter.Tk.report_callback_exception = report_callback_exception
+
 
 class folders(tkinter.Frame):
 
