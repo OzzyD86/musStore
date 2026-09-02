@@ -4,6 +4,7 @@ import sqlite3
 from tkinter.messagebox import showerror
 
 from core.bindings import bindings
+import traceback
 
 class musStore():
 	def __init__(self):
@@ -16,11 +17,17 @@ con = ms.con
 cur = ms.cur
 
 def report_callback_exception(self, exc, val, tb):
-	showerror("Error", message=str(val) + str(val))
+	showerror("Error", message=str(val))
+	out=""
+	for i in traceback.extract_stack():
+		out += str(i)+"\n"
+	displayText.insert(tkinter.END, out + "\n")
+	displayText.insert(tkinter.END, val)
 	#f = open("whoops", "r")
 	#f.write("Oop")
 	#f.close()
 	
+tkinter.Tk.report_callback_exception = report_callback_exception
 
 def buildName(a,b):
 	for i in [" ", ",","!", "'"]:
@@ -42,6 +49,10 @@ def buildName(a,b):
 from widgets.tkInputBox import tkInputBox
 from widgets.treeViewWithSearch import treeViewWithSearch
 win = tkinter.Tk()
+err = tkinter.Tk()
+displayText = tkinter.Text(err, height=20, width=40)
+displayText.grid()
+
 win.title("Music Store")
 def add():
 	d = tkInputBox(win, {
@@ -59,8 +70,6 @@ import sys
 
 if hasattr(sys, 'getandroidapilevel'):
 	s.configure('Treeview', rowheight=48+8)
-	tkinter.Tk.report_callback_exception = report_callback_exception
-
 
 class folders(tkinter.Frame):
 
@@ -107,6 +116,7 @@ class folders(tkinter.Frame):
 		for b in a["folder"]:
 			cur.execute("replace into music_folder (music_id, folder_id) values (?,?)", (c,b))
 			self.tv.move(self.tv.selected()[0], "f-"+str(b),0)
+		con.commit()
 		pass
 		
 	def updateSongDialog(self):
