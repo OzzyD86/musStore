@@ -70,7 +70,7 @@ class folders(tkinter.Frame):
 			return False
 		#showerror(p)
 		
-		d = tkInputBox(win, {
+		d = tkInputBox(self, {
 			"title" : {
 				"name":"Song Name",
 				"type": "label",
@@ -93,7 +93,7 @@ class folders(tkinter.Frame):
 	def songsDeletedSong(self, data):
 		print("== SONG REMOVED == ")
 		self.tv.delete("s-" + str(data['dbid']))
-		cur.execute("delete from music_folder where music_id = ?", (data['dbid'],))
+		self.cur.execute("delete from music_folder where music_id = ?", (data['dbid'],))
 		print(data)
 		
 	def addFolderDialog(self):
