@@ -42,3 +42,4 @@ class tkInputBox():
 				self.vars[i].grid(column=1,row=h,pady=5,padx=5, sticky="w")
 			h+= 1
 		tkinter.Button(self.win, text="Add", command=self.add).grid(column=1,row=h)
+		self.win.columnconfigure(1, weight=1)
