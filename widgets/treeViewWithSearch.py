@@ -3,6 +3,20 @@ from tkinter import ttk
 from tkinter.messagebox import showerror
 
 class treeViewWithSearch(tkinter.Frame):
+	
+	def checkForSearch(self, item):
+		n = self.tt.get()
+		if not item in self.storage:
+			return False
+			
+		for i in self.storage[item][1]:
+			if (i.upper().find(n.upper()) >= 0):
+				# Maybe add it if it doesn't exist
+				return True
+		
+		# Maybe remove it if it shouldn't exist
+		return False
+
 	def search(self, a,b,c):
 		n = self.tt.get()
 		disp = []
