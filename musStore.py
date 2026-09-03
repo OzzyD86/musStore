@@ -49,16 +49,6 @@ from widgets.treeViewWithSearch import treeViewWithSearch
 win = tkinter.Tk()
 
 win.title("Music Store")
-def add():
-	d = tkInputBox(win, {
-		"title" : {
-			"name":"Title"
-		},
-		"subtitle" : {
-			"name":"Subtitle"
-		}
-	})
-	d.passFunc("add", f1.addSong)
 
 s = ttk.Style()
 import sys
@@ -194,64 +184,8 @@ class folders(tkinter.Frame):
 		self.supdate = tkinter.Button(self, text="Update...", command=self.updateSongDialog).grid(row = 2,column=1)
 		
 		self.sdel = tkinter.Button(self, text="Delete", command=self.delete).grid(row = 2,column=0)
-		
-class songs(tkinter.Frame):
-	
-	def addSong(self, data):
-		a = data["title"]
-		b = data["subtitle"]
-		c = buildName(a,b)
-		cur.execute("insert into music (sortkey, title,subtitle) values (?, ?,?)", (c,a,b))
-		d = cur.lastrowid
-		if (self.core.bindings.getBindings("music", "<create>")):
-			for i in self.core.bindings.getBindings("music", "<create>"):
-				i({ "title" : a, "subtitle": b, "sortkey": c, "dbid": d})
 
-		self.tv.add([d, c, a, b])
-
-	def tvSongSearch(self, a,b,c):
-		n = self.tt.get()
-		self.tv.delete(*self.tv.get_children())
-		for i in cur.execute("select * from music where title like '%"+n+"%' order by sortkey asc"):
-			self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
-
-	def delete(self):
-		if (len(self.tv.selected()) > 0):
-			de=self.tv.item(self.tv.selected()[0])["values"]
-			te=self.tv.item(self.tv.selected()[0])["text"]
-		
-			cur.execute("delete from music where sortkey = ? and title=?", (te, de[0]))
-			
-			s = self.tv.selected()
-
-			if (self.core.bindings.getBindings("music", "<delete>")):
-				for i in self.core.bindings.getBindings("music", "<delete>"):
-					i({ "sortkey" : de[0], "title": te, "dbid": s[0]})
-
-			self.tv.delete(self.tv.selected())
-			con.commit()
-		else:
-			showerror("Nothing to delete", "No items or no item selected to delete")
-			
-	def __init__(self, master, **kw):
-		super().__init__(master, **kw)
-		self.core = self.nametowidget(".").core # Aha! That's how to do it!
-
-		self.tt = tkinter.StringVar()
-		self.tv = treeViewWithSearch(self, 2)
-		self.tv.grid(columnspan=3,sticky='news')
-
-		for i in cur.execute("select * from music order by sortkey asc"):
-			self.tv.add(i)
-
-		self.rowconfigure(0, weight=1)
-		self.columnconfigure(0, weight=1)
-		
-		self.sadd = tkinter.Button(self, text="Add...", command=add)
-		self.sadd.grid(row = 2,column=1)
-		self.srem = tkinter.Button(self, text="Delete", command=self.delete)
-		self.srem.grid(row = 2, column=0)
-		pass
+from plugins.songs import songs
 
 from plugins.labeller import labeller
 
@@ -265,8 +199,8 @@ f2 = tkinter.Frame(notebook, bg='blue', width=200, height=200)
 notebook.add(f1, text='Songs')
 notebook.add(fo, text='Folders')
 
-lab = labeller(notebook, bg='blue')
-notebook.add(lab, text='Labeller')
+ao = labeller(notebook, bg='blue')
+notebook.add(ao, text='Auto-organise')
 
 notebook.grid(sticky="news")
 
