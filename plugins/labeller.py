@@ -4,28 +4,24 @@ from widgets.tkInputBox import tkInputBox
 from widgets.treeViewWithSearch import treeViewWithSearch
 
 class labeller(tkinter.Frame):
-	def __init__(self, master, **kw):
-		super().__init__(master, **kw)
-		self.core = self.nametowidget(".").core # Aha! That's how to do it!
-
-		self.tv = treeViewWithSearch(self, 2)
-		self.tv.grid(columnspan=3,sticky='news')
-
+	
+	def orgaRun(self):
 		cur = self.core.cur
+		vols = 0
+		poses = []
 		
 		p = cur.execute("sELECT count(*) as `c` FROM `music`")
 		total = p.fetchone()[0]
-		#print(total)
-				
-		vols = 0
-		poses = []
+		
 		for i in cur.execute("SELECT `id`, `sortkey`, `title` FROM `folder`"):
 			vols += 1
 			poses.append("f-" + str(i[0]))
 			self.tv.add(["f-" + str(i[0]), i[2]])
 		
-		st = {}
-		if (vols > 0):			
+		if (vols == 0):
+			return False
+		else:
+			st = {}
 			spl = total / vols
 
 			p = cur.execute("SELECT count(*) as `c`, upper(substr(`sortkey`, 1, 1)) as `a` FROM `music` GROUP BY `a` order by `a` ASC")
@@ -63,10 +59,22 @@ class labeller(tkinter.Frame):
 		for i in cur.execute("select * from music order by sortkey asc"):
 			#print(i)
 			self.tv.add(i, ret[i[1][0]])
+			
+	def __init__(self, master, **kw):
+		super().__init__(master, **kw)
+		self.core = self.nametowidget(".").core # Aha! That's how to do it!
+
+		self.tv = treeViewWithSearch(self, 2)
+		self.tv.grid(columnspan=3,sticky='news')
+
+		cur = self.core.cur
+				
+		self.orgaRun()
 
 		#for i in st:
 		#	print("Folder " + str(i+1) + ":")
 		#	for j in st[i]:
 		#		print(j)
+		tkinter.Button(self, state="disabled", text="Re-run").grid(row=1,column=0)
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
