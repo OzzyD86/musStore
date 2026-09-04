@@ -27,22 +27,25 @@ class songs(tkinter.Frame):
 	
 	def delete(self):
 		if (len(self.tv.selected()) > 0):
-			de=self.tv.item(self.tv.selected()[0])["values"]
-			te=self.tv.item(self.tv.selected()[0])["text"]
-		
-			self.cur.execute("delete from music where sortkey = ? and title=?", (te, de[0]))
 			
-			s = self.tv.selected()
+			for i in self.tv.selected():
+				
+				de=self.tv.item(i)["values"]
+				te=self.tv.item(i)["text"]
+			
+				self.cur.execute("delete from music where sortkey = ? and title=?", (te, de[0]))
+				
+				s = i
+				print(de[0], te, s)
+				if (self.core.bindings.getBindings("music", "<delete>")):
+					for j in self.core.bindings.getBindings("music", "<delete>"):
+						j({ "sortkey" : de[0], "title": te, "dbid": str(s)})
 
-			if (self.core.bindings.getBindings("music", "<delete>")):
-				for i in self.core.bindings.getBindings("music", "<delete>"):
-					i({ "sortkey" : de[0], "title": te, "dbid": s[0]})
-
-			self.tv.delete(self.tv.selected())
+				self.tv.delete(int(i))
 			self.core.con.commit()
 		else:
 			showerror("Nothing to delete", "No items or no item selected to delete")
-		
+			
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		self.core = self.nametowidget(".").core # Aha! That's how to do it!

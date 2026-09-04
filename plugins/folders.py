@@ -38,7 +38,7 @@ class folders(tkinter.Frame):
 		a = data["title"]
 		c = buildName(a,a)
 		self.cur.execute("insert into folder (sortkey, title) values (?, ?)", (c,a))
-		d = cur.lastrowid
+		d = self.cur.lastrowid
 		self.tv.add(["f-" + str(d), c, a])
 		
 	def updateSongToFolder(self, a):

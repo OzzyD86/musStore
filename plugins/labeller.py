@@ -5,10 +5,26 @@ from widgets.treeViewWithSearch import treeViewWithSearch
 
 class labeller(tkinter.Frame):
 	
+	def useThis(self):
+		self.core.cur.execute("DELETE FROM `music_folder`")
+		
+		for i in self.tv.get_children():
+			print(i)
+			fold = i.split("-")[1]
+			print(fold)
+			for j in self.tv.get_children(i):
+				self.core.cur.execute("INSERT INTO `music_folder` (`folder_id`, `music_id`) VALUES (?, ?)", (int(fold), int(j)))
+				print(j)
+		
+		print("We now need to reload the folder view!")
+		pass
+		
 	def orgaRun(self):
 		cur = self.core.cur
 		vols = 0
 		poses = []
+		
+		self.tv.clear()
 		
 		p = cur.execute("sELECT count(*) as `c` FROM `music`")
 		total = p.fetchone()[0]
@@ -75,6 +91,7 @@ class labeller(tkinter.Frame):
 		#	print("Folder " + str(i+1) + ":")
 		#	for j in st[i]:
 		#		print(j)
-		tkinter.Button(self, state="disabled", text="Re-run").grid(row=1,column=0)
+		tkinter.Button(self, command=self.orgaRun, text="Re-run").grid(row=1,column=0)
+		tkinter.Button(self, command=self.useThis, text="Use This Configuration").grid(row=1,column=1)
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)

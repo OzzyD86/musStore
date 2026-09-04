@@ -17,9 +17,14 @@ class treeViewWithSearch(tkinter.Frame):
 		# Maybe remove it if it shouldn't exist
 		return False
 
+	def clear(self):
+		self.tv.delete(*self.tv.get_children())
+		self.storage = {}
+		
 	def search(self, a,b,c):
 		n = self.tt.get()
 		disp = []
+
 		self.tv.delete(*self.tv.get_children())
 		for i,j in self.storage.items():
 			t=0
