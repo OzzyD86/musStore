@@ -16,7 +16,7 @@ class labeller(tkinter.Frame):
 				self.core.cur.execute("INSERT INTO `music_folder` (`folder_id`, `music_id`) VALUES (?, ?)", (int(fold), int(j)))
 				print(j)
 		
-		print("We now need to reload the folder view!")
+		self.core.bindings.execute("labeller", "<causeUpdate>")
 		pass
 		
 	def orgaRun(self):

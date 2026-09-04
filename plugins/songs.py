@@ -36,10 +36,9 @@ class songs(tkinter.Frame):
 				self.cur.execute("delete from music where sortkey = ? and title=?", (te, de[0]))
 				
 				s = i
-				print(de[0], te, s)
-				if (self.core.bindings.getBindings("music", "<delete>")):
-					for j in self.core.bindings.getBindings("music", "<delete>"):
-						j({ "sortkey" : de[0], "title": te, "dbid": str(s)})
+				#print(de[0], te, s)
+				
+				self.core.bindings.execute("music", "<delete>", sortkey = de[0], title = te, dbid =  str(s))
 
 				self.tv.delete(int(i))
 			self.core.con.commit()
@@ -71,9 +70,7 @@ class songs(tkinter.Frame):
 		c = buildName(a,b)
 		self.cur.execute("insert into music (sortkey, title,subtitle) values (?, ?,?)", (c,a,b))
 		d = self.cur.lastrowid
-		if (self.core.bindings.getBindings("music", "<create>")):
-			for i in self.core.bindings.getBindings("music", "<create>"):
-				i({ "title" : a, "subtitle": b, "sortkey": c, "dbid": d})
+		self.core.bindings.execute("music", "<create>", title = a, subtitle=b, sortkey = c, dbid = d)
 
 		self.tv.add([d, c, a, b])
 		self.core.con.commit()

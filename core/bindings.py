@@ -12,6 +12,15 @@ class bindings():
 		self.bindings[applet][call].append(func)
 		return True
 	
+	def execute(self, applet, call, **data):
+		#print(data)
+		if (self.getBindings(applet, call)):
+			for i in self.getBindings(applet, call):
+				if (len(data) == 0):
+					i()
+				else:
+					i(data)
+
 	def getBindings(self, applet, call):
 		if (applet in self.bindings):
 			if (call in self.bindings[applet]):

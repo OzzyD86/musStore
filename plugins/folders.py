@@ -57,7 +57,21 @@ class folders(tkinter.Frame):
 			
 		self.core.con.commit()
 		pass
+	
+	def refreshEverything(self):
+		self.tv.clear()
 		
+		for i in self.cur.execute("select * from folder order by sortkey asc"):
+			self.tv.add(("f-" + str(i[:1][0]),) + i[1:])
+			
+		self.tv.add(["Nf", "Not in Folder"])
+		for i in self.cur.execute("select a.*, b.folder_id from music a left join music_folder b on a.id = b.music_id order by a.sortkey asc"):
+			if (i[-1] is None):
+				gp = "Nf"
+			else:
+				gp = "f-" + str(i[-1])
+			self.tv.add(("s-" + str(i[:1][0]),) + i[1:-1], gp)
+
 	def updateSongDialog(self):
 		x = {}
 		if (len(self.tv.selected()) == 0):
@@ -111,18 +125,11 @@ class folders(tkinter.Frame):
 		self.cur = self.core.cur
 		self.core.bindings.bind("music", "<create>", self.songsAddedNewSong)
 		self.core.bindings.bind("music", "<delete>", self.songsDeletedSong)
+		self.core.bindings.bind("labeller", "<causeUpdate>", self.refreshEverything)
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
-		for i in self.cur.execute("select * from folder order by sortkey asc"):
-			self.tv.add(("f-" + str(i[:1][0]),) + i[1:])
-			
-		self.tv.add(["Nf", "Not in Folder"])
-		for i in self.cur.execute("select a.*, b.folder_id from music a left join music_folder b on a.id = b.music_id order by a.sortkey asc"):
-			if (i[-1] is None):
-				gp = "Nf"
-			else:
-				gp = "f-" + str(i[-1])
-			self.tv.add(("s-" + str(i[:1][0]),) + i[1:-1], gp)
+		
+		self.refreshEverything()
 
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
