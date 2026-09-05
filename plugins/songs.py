@@ -14,7 +14,37 @@ def buildName(a,b): # Import this?
 	return b[:8].upper()
 	
 class songs(tkinter.Frame):
-	def addD(self): # Class this?
+	def editSong(self, data):
+		a = data["title"]
+		b = data["subtitle"]
+		c = buildName(a,b)
+		i = data["val"]
+		self.core.cur.execute("update music set sortkey = ?, title = ?, subtitle = ? where id = ?", (c,a,b,i))
+		self.tv.update(i, [c,a,b])
+		self.core.bindings.execute("music", "<update>", title = a, subtitle=b, sortkey = c, dbid = i)
+		showerror(data)
+		
+	def editD(self): # Class this?
+		
+		p = self.tv.item(self.tv.selected()[0])
+		d = tkInputBox(self, {
+			"val" : {
+				"name":"Selected",
+				"type": "label",
+				"text": self.tv.selected()[0],
+				"selected": self.tv.selected()[0]
+			},
+			"title" : {
+				"name":"Title",
+				"text": p["values"][0]
+			},
+			"subtitle" : {
+				"name":"Subtitle",
+				"text": p["values"][1]
+			}
+		})
+		d.passFunc("add", self.editSong)
+	def addD(self):
 		d = tkInputBox(self, {
 			"title" : {
 				"name":"Title"
@@ -63,7 +93,8 @@ class songs(tkinter.Frame):
 		self.sadd.grid(row = 2,column=1)
 		self.srem = tkinter.Button(self, text="Delete", command=self.delete)
 		self.srem.grid(row = 2, column=0)
-
+		self.sed = tkinter.Button(self, text="Edit...", command=self.editD)
+		self.sed.grid(row = 2,column=2)
 	def addSong(self, data):
 		a = data["title"]
 		b = data["subtitle"]
