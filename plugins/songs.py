@@ -20,9 +20,9 @@ class songs(tkinter.Frame):
 		c = buildName(a,b)
 		i = data["val"]
 		self.core.cur.execute("update music set sortkey = ?, title = ?, subtitle = ? where id = ?", (c,a,b,i))
-		self.tv.update(i, [c,a,b])
+		self.tv.update(int(i), [c,a,b])
 		self.core.bindings.execute("music", "<update>", title = a, subtitle=b, sortkey = c, dbid = i)
-		showerror(data)
+		#showerror(data)
 		
 	def editD(self): # Class this?
 		
