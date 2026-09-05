@@ -43,8 +43,12 @@ class folders(tkinter.Frame):
 		
 	def updateSongToFolder(self, a):
 	
-		c = self.tv.selected()[0].split("-")[1]
-		parent = self.tv.storage[self.tv.selected()[0]][0]
+		#for i in a["title"]:
+		#	showerror(i)
+			
+		c = a["title"][0].split("-")[1]
+		
+		parent = self.tv.storage[a["title"][0]][0]
 	
 		for b in a["folder"]:
 			self.cur.execute("replace into music_folder (music_id, folder_id) values (?,?)", (c,b))
@@ -88,7 +92,8 @@ class folders(tkinter.Frame):
 			"title" : {
 				"name":"Song Name",
 				"type": "label",
-				"text": "Get Text"
+				"text": self.tv.selected(),
+				"selected": self.tv.selected()
 			},
 			"folder" : {
 				"name":"Folder Name",
