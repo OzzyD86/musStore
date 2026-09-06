@@ -95,3 +95,9 @@ class labeller(tkinter.Frame):
 		tkinter.Button(self, command=self.useThis, text="Use This Configuration").grid(row=1,column=1)
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
+
+MANIFEST = {
+	"call": labeller,
+	"order":2,
+	"name": "Auto-organise"
+}
