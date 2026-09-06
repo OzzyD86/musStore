@@ -124,6 +124,13 @@ class folders(tkinter.Frame):
 		d.passFunc("add", self.addFolder)
 		pass
 	
+	def SQLSetup(self):
+		try:
+			self.core.cur.execute("create table folder (id integer not null primary key autoincrement, sortkey text, title text)")
+			self.core.cur.execute("create table music_folder (music_id integer unique, folder_id integer)")		
+		except:
+			pass
+			
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		self.core = self.nametowidget(".").core # Aha! That's how to do it!
@@ -133,8 +140,12 @@ class folders(tkinter.Frame):
 		self.core.bindings.bind("labeller", "<causeUpdate>", self.refreshEverything)
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
-		
-		self.refreshEverything()
+	
+		try:
+			self.refreshEverything()
+		except:
+			self.SQLSetup()
+			self.refreshEverything()
 
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
@@ -142,3 +153,9 @@ class folders(tkinter.Frame):
 		self.supdate = tkinter.Button(self, text="Update...", command=self.updateSongDialog).grid(row = 2,column=1)
 		
 		self.sdel = tkinter.Button(self, text="Delete", command=self.delete).grid(row = 2,column=0)
+
+MANIFEST = {
+	"call": folders,
+	"order":1,
+	"name": "Folders"
+			}
