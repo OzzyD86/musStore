@@ -52,12 +52,9 @@ if hasattr(sys, 'getandroidapilevel'):
 setattr(win, "core", ms)
 notebook = ttk.Notebook(win, style='lefttab.TNotebook')
 
-from core.musicStore import loader
-
-ll = loader()
 mods = {}
 loaders = {}
-setattr(win.core, "loaders", ll)
+#setattr(win.core, "loaders", loader())
 
 import os, importlib
 for i in os.scandir("plugins"):
@@ -72,12 +69,12 @@ for i in os.scandir("plugins"):
 				loaders[a.MANIFEST["order"]].append(a.MANIFEST)
 			else:
 				loaders[a.MANIFEST["order"]] = [a.MANIFEST]
-			ll.loaders[nm] = True
+			win.core.loaders.loaders[nm] = True
 			#displayText.insert(tkinter.END, str(d) + "\n")
 		else:
 			notebook.add( d(notebook), text=i.name.split(".")[0])
 
-displayText.insert(tkinter.END, ll.loaders)
+#displayText.insert(tkinter.END, win.core.loaders.loaders)
 for i in sorted(loaders.keys()):
 	for k in loaders[i]:
 		notebook.add(k["call"](notebook), text=k["name"])
