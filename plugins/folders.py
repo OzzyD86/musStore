@@ -131,6 +131,12 @@ class folders(tkinter.Frame):
 		except:
 			pass
 			
+	def songsUpdatedSong(self, kwargs):
+		c = kwargs["sortkey"]
+		a = kwargs["title"]
+		b = kwargs["subtitle"]
+		self.tv.update("s-" + str(kwargs["dbid"]), [c,a,b])
+		
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		self.core = self.nametowidget(".").core # Aha! That's how to do it!
@@ -138,6 +144,8 @@ class folders(tkinter.Frame):
 		self.core.bindings.bind("music", "<create>", self.songsAddedNewSong)
 		self.core.bindings.bind("music", "<delete>", self.songsDeletedSong)
 		self.core.bindings.bind("labeller", "<causeUpdate>", self.refreshEverything)
+		self.core.bindings.bind("music", "<update>", self.songsUpdatedSong) # massive overkill, also doesn't work
+
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
 	
@@ -158,4 +166,4 @@ MANIFEST = {
 	"call": folders,
 	"order":1,
 	"name": "Folders"
-			}
+		}
