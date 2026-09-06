@@ -1,17 +1,10 @@
 import tkinter
 from tkinter import ttk
-import sqlite3
 from tkinter.messagebox import showerror
 
-from core.bindings import bindings
 import traceback
+from core.musicStore import musStore
 
-class musStore():
-	def __init__(self):
-		self.con = sqlite3.connect("musScore.db") # Should change this at some point!
-		self.cur = self.con.cursor()
-		self.bindings = bindings()
-		
 ms = musStore()
 con = ms.con
 cur = ms.cur
@@ -37,13 +30,9 @@ def buildName(a,b):
 	return b[:8].upper()
 	pass
 
-#cur.execute("drop table music")
-#cur.execute("create table music (id integer not null primary key autoincrement, sortkey text, title text, subtitle text)")
-#cur.execute("create table music_folder (music_id integer unique, folder_id integer)")
-#cur.execute("create table folder (id integer not null primary key autoincrement, sortkey text, title text)")
-#cur.execute("create table tune (id integer not null primary key autoincrement, sortkey text, title text)")
+#cur.execute("drop table tune")
 #cur.execute("insert into tune (sortkey, title) values ('SLANE', 'SLANE')")
-
+#cur.execute("create table tune_song (id integer not null primary key autoincrement, song_id integer not null, tune_id integer not null)")
 from widgets.tkInputBox import tkInputBox
 from widgets.treeViewWithSearch import treeViewWithSearch
 win = tkinter.Tk()
@@ -63,14 +52,19 @@ if hasattr(sys, 'getandroidapilevel'):
 setattr(win, "core", ms)
 notebook = ttk.Notebook(win, style='lefttab.TNotebook')
 
+from core.musicStore import loader
+
+ll = loader()
 mods = {}
 loaders = {}
+setattr(win.core, "loaders", ll)
+
 import os, importlib
 for i in os.scandir("plugins"):
 	if (os.path.isfile("plugins/" + i.name)):
 		mods[i.name.split(".")[0]] = importlib.import_module("plugins." + i.name.split(".")[0])
-	
-		a = mods[i.name.split(".")[0]]
+		nm= i.name.split(".")[0]
+		a = mods[nm]
 		
 		d = getattr(a, i.name.split(".")[0])
 		if (hasattr(a, "MANIFEST")):
@@ -78,11 +72,12 @@ for i in os.scandir("plugins"):
 				loaders[a.MANIFEST["order"]].append(a.MANIFEST)
 			else:
 				loaders[a.MANIFEST["order"]] = [a.MANIFEST]
-
+			ll.loaders[nm] = True
 			#displayText.insert(tkinter.END, str(d) + "\n")
 		else:
 			notebook.add( d(notebook), text=i.name.split(".")[0])
 
+displayText.insert(tkinter.END, ll.loaders)
 for i in sorted(loaders.keys()):
 	for k in loaders[i]:
 		notebook.add(k["call"](notebook), text=k["name"])
