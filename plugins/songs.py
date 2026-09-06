@@ -81,3 +81,8 @@ class songs(tkinter.Frame):
 		for i in self.cur.execute("select * from music where title like '%"+n+"%' order by sortkey asc"):
 			self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
 		
+MANIFEST = {
+	"call": songs,
+	"order":0,
+	"name": "Songs"
+}
