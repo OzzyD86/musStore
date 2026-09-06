@@ -124,6 +124,19 @@ class folders(tkinter.Frame):
 		d.passFunc("add", self.addFolder)
 		pass
 	
+	def SQLSetup(self):
+		try:
+			self.core.cur.execute("create table folder (id integer not null primary key autoincrement, sortkey text, title text)")
+			self.core.cur.execute("create table music_folder (music_id integer unique, folder_id integer)")		
+		except:
+			pass
+			
+	def songsUpdatedSong(self, kwargs):
+		c = kwargs["sortkey"]
+		a = kwargs["title"]
+		b = kwargs["subtitle"]
+		self.tv.update("s-" + str(kwargs["dbid"]), [c,a,b])
+		
 	def __init__(self, master, **kw):
 		super().__init__(master, **kw)
 		self.core = self.nametowidget(".").core # Aha! That's how to do it!
@@ -131,10 +144,16 @@ class folders(tkinter.Frame):
 		self.core.bindings.bind("music", "<create>", self.songsAddedNewSong)
 		self.core.bindings.bind("music", "<delete>", self.songsDeletedSong)
 		self.core.bindings.bind("labeller", "<causeUpdate>", self.refreshEverything)
+		self.core.bindings.bind("music", "<update>", self.songsUpdatedSong) # massive overkill, also doesn't work
+
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,rowspan=2,sticky="news")
-		
-		self.refreshEverything()
+	
+		try:
+			self.refreshEverything()
+		except:
+			self.SQLSetup()
+			self.refreshEverything()
 
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)

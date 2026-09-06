@@ -112,7 +112,12 @@ class treeViewWithSearch(tkinter.Frame):
 	
 	def item(self, item):
 		return self.tv.item(item)
-		
+	
+	def update(self, item, data):
+		d = self.storage[item]
+		self.storage[item] = [d[0], data]
+		self.tv.item(item, text=data[0], values= data[1:])
+
 	def add(self, data, parent = ""):
 		self.storage[data[0]] = [parent, data[1:]]
 		self.tv.insert(parent, "end", data[0], text=data[1], values= data[2:])

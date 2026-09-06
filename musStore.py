@@ -79,7 +79,7 @@ for i in os.scandir("plugins"):
 			else:
 				loaders[a.MANIFEST["order"]] = [a.MANIFEST]
 
-			displayText.insert(tkinter.END, str(d) + "\n")
+			#displayText.insert(tkinter.END, str(d) + "\n")
 		else:
 			notebook.add( d(notebook), text=i.name.split(".")[0])
 

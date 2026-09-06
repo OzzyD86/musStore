@@ -16,7 +16,7 @@ class tkInputBox():
 				if ("selected" in j):
 					snd[i] = j["selected"]
 				else:
-					end[i] = None
+					snd[i] = None
 					
 		for i in self.funcs["add"]:
 			i(snd)
@@ -42,6 +42,8 @@ class tkInputBox():
 				self.vars[i]["obj"].grid(column=1,row=h,pady=5,padx=5, sticky="w")
 			else:
 				self.vars[i]["obj"] = tkinter.Entry(self.win)
+				if ("text" in self.vars[i]):
+					self.vars[i]["obj"].insert(0, self.vars[i]["text"])
 				self.vars[i]["obj"].grid(column=1,row=h,pady=5,padx=5, sticky="w")
 			h+= 1
 		tkinter.Button(self.win, text="Add", command=self.add).grid(column=1,row=h)
