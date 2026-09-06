@@ -14,6 +14,13 @@ def buildName(a,b): # Import this?
 	return b[:8].upper()
 	
 class songs(tkinter.Frame):
+	
+	def SQLSetup(self):
+		try:
+			self.core.cur.execute("create table music (id integer not null primary key autoincrement, sortkey text, title text, subtitle text)")
+		except:
+			pass
+			
 	def editSong(self, data):
 		a = data["title"]
 		b = data["subtitle"]
@@ -22,7 +29,7 @@ class songs(tkinter.Frame):
 		self.core.cur.execute("update music set sortkey = ?, title = ?, subtitle = ? where id = ?", (c,a,b,i))
 		self.tv.update(int(i), [c,a,b])
 		self.core.bindings.execute("music", "<update>", title = a, subtitle=b, sortkey = c, dbid = i)
-		#showerror(data)
+		showerror(data)
 		
 	def editD(self): # Class this?
 		
@@ -44,6 +51,7 @@ class songs(tkinter.Frame):
 			}
 		})
 		d.passFunc("add", self.editSong)
+		
 	def addD(self):
 		d = tkInputBox(self, {
 			"title" : {
@@ -83,8 +91,13 @@ class songs(tkinter.Frame):
 		self.tv = treeViewWithSearch(self, 2)
 		self.tv.grid(columnspan=3,sticky='news')
 
-		for i in self.cur.execute("select * from music order by sortkey asc"):
-			self.tv.add(i)
+		try:
+			for i in self.cur.execute("select * from music order by sortkey asc"):
+				self.tv.add(i)
+		except:
+			self.SQLSetup()
+			for i in self.cur.execute("select * from music order by sortkey asc"):
+				self.tv.add(i)
 
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
@@ -112,3 +125,8 @@ class songs(tkinter.Frame):
 		for i in self.cur.execute("select * from music where title like '%"+n+"%' order by sortkey asc"):
 			self.tv.insert("", "end", i[0], values= [i[1],i[2],i[3]])
 		
+MANIFEST = {
+	"call": songs,
+	"order":0,
+	"name": "Songs"
+}
