@@ -29,7 +29,7 @@ class songs(tkinter.Frame):
 		self.core.cur.execute("update music set sortkey = ?, title = ?, subtitle = ? where id = ?", (c,a,b,i))
 		self.tv.update(int(i), [c,a,b])
 		self.core.bindings.execute("music", "<update>", title = a, subtitle=b, sortkey = c, dbid = i)
-		showerror(data)
+		#showerror(data)
 		
 	def editD(self): # Class this?
 		
@@ -108,6 +108,7 @@ class songs(tkinter.Frame):
 		self.srem.grid(row = 2, column=0)
 		self.sed = tkinter.Button(self, text="Edit...", command=self.editD)
 		self.sed.grid(row = 2,column=2)
+		
 	def addSong(self, data):
 		a = data["title"]
 		b = data["subtitle"]
