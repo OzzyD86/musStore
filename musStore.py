@@ -60,23 +60,32 @@ if hasattr(sys, 'getandroidapilevel'):
 	displayText.grid()
 	tkinter.Tk.report_callback_exception = report_callback_exception
 
-
-from plugins.songs import songs
-from plugins.folders import folders
-from plugins.labeller import labeller
-
 setattr(win, "core", ms)
 notebook = ttk.Notebook(win, style='lefttab.TNotebook')
 
-f1 = songs(notebook, bg='red')
-fo = folders(notebook, bg='green')
-f2 = tkinter.Frame(notebook, bg='blue', width=200, height=200)
+mods = {}
+loaders = {}
+import os, importlib
+for i in os.scandir("plugins"):
+	if (os.path.isfile("plugins/" + i.name)):
+		mods[i.name.split(".")[0]] = importlib.import_module("plugins." + i.name.split(".")[0])
+	
+		a = mods[i.name.split(".")[0]]
+		
+		d = getattr(a, i.name.split(".")[0])
+		if (hasattr(a, "MANIFEST")):
+			if (a.MANIFEST["order"] in loaders):
+				loaders[a.MANIFEST["order"]].append(a.MANIFEST)
+			else:
+				loaders[a.MANIFEST["order"]] = [a.MANIFEST]
 
-notebook.add(f1, text='Songs')
-notebook.add(fo, text='Folders')
+			displayText.insert(tkinter.END, str(d) + "\n")
+		else:
+			notebook.add( d(notebook), text=i.name.split(".")[0])
 
-ao = labeller(notebook, bg='blue')
-notebook.add(ao, text='Auto-organise')
+for i in sorted(loaders.keys()):
+	for k in loaders[i]:
+		notebook.add(k["call"](notebook), text=k["name"])
 
 notebook.grid(sticky="news")
 
