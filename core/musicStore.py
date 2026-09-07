@@ -6,6 +6,7 @@ class musStore():
 		self.con = sqlite3.connect("musScore.db") # Should change this at some point!
 		self.cur = self.con.cursor()
 		self.bindings = bindings()
+		self.loaders = loader()
 
 class loader():
 	def __init__(self):
